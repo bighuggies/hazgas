@@ -1,4 +1,4 @@
-#define NUM_ROOMS 1
+#define NUM_ROOMS 10
 #define ALARM_THRESHOLD 10
 
 mtype = {
@@ -79,7 +79,8 @@ proctype FactoryController(chan Vent_in,
     :: Vent_in ? M_VENT ->
         venting++;
         if
-        :: venting >= ALARM_THRESHOLD * NUM_ROOMS / 100 ->
+        :: venting >= ALARM_THRESHOLD * NUM_ROOMS / 100 &&
+           !alarming ->
             printf("Factory in ALARM mode.\n");
             Alarm_out ! M_ALARM;
             alarming = true;
@@ -98,7 +99,8 @@ proctype Agent(chan Alarm_in,
                     Reset_out) {
     do
     :: Alarm_in ? M_ALARM ->
-        Reset_out ! M_RESET
+        printf("Agent is RESETTING alarm.\n");
+        Reset_out ! M_RESET;
     od;
 };
 
@@ -113,7 +115,7 @@ init {
     rooms[0].upperBound = 5;
     rooms[0].volume = 1000;
     rooms[0].ventRate = 15;
-    rooms[0].gasRate = 10;
+    rooms[0].gasRate = 1;
 
     atomic {
         int i = 0;
@@ -122,10 +124,10 @@ init {
             break;
         :: else ->
             rooms[i].i = i;
-            run RoomController(rooms[i], Clock[i], Vent, Alarm);
+            run RoomController(rooms[i], Clock[i], Alarm, Vent);
             i++;
         od;
-        run FactoryController(Vent, Reset, Alarm);
+        run FactoryController(Vent, Alarm, Reset);
         run Agent(Alarm, Reset);
     }
 
