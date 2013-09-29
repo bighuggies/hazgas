@@ -1,5 +1,5 @@
-#define NUM_ROOMS 1
-#define ALARM_THRESHOLD 10
+#define NUM_ROOMS 2
+#define ALARM_THRESHOLD 1
 
 mtype = {
     M_TICK,
@@ -8,8 +8,6 @@ mtype = {
     M_ALARM,
     M_RESET
 };
-
-bool alarming = false;
 
 typedef Room {
     int i;
@@ -25,6 +23,7 @@ typedef Room {
     int gasVolume;
 
     bool venting;
+    bool alarming;
 };
 
 Room rooms[NUM_ROOMS];
@@ -34,6 +33,7 @@ proctype RoomController(Room room;
     do
     :: room.Alarm_in ? M_ALARM ->
         printf("Room %d has received an ALARM.\n", room.i);
+        room.alarming = true;
 
         if
         :: !room.venting ->
@@ -43,24 +43,36 @@ proctype RoomController(Room room;
             skip;
         fi;
 
+    :: room.Alarm_in ? M_RESET ->
+        printf("Room %d has STOPPED ALARMING.\n", room.i);
+        room.alarming = false;
+
     :: room.Clock_in ? M_TICK ->
         room.gasVolume = room.gasVolume + room.gasRate;
 
         if
-        :: (room.gasVolume >= (room.upperBound * room.volume / 100)) &&
+        :: room.alarming ->
+            goto ventOnly;
+        :: else ->
+            skip;
+        fi;
+
+        if
+        :: (room.gasVolume >= room.upperBound) &&
            !room.venting ->
             room.venting = true;
-            printf("Room %d is now VENTING.\n", room.i);
+            printf("Room %d is now VENTING (%d).\n", room.i, room.gasVolume);
             Vent_out ! M_VENT;
-        :: (room.gasVolume <= (room.lowerBound * room.volume / 100)) &&
-           room.venting && !alarming ->
+        :: (room.gasVolume <= room.lowerBound) &&
+           room.venting ->
             room.venting = false;
-            printf("Room %d is NO LONGER VENTING. (%d)\n", room.i, alarming);
+            printf("Room %d is NO LONGER VENTING. (%d)\n", room.i, room.alarming);
             Vent_out ! M_UNVENT;
         :: else ->
             skip;
         fi;
 
+        ventOnly:
         if
         :: room.venting ->
             room.gasVolume = room.gasVolume - room.ventRate;
@@ -80,33 +92,37 @@ proctype FactoryController(chan Vent_in,
                                 Alarm_out,
                                 Reset_in) {
     int venting = 0;
+    bool alarming = false;
 
     do
     :: Reset_in ? M_RESET ->
         printf("Factory NO LONGER in ALARM mode.\n");
         alarming = false;
+
+        atomic {
+            int i;
+            for (i : 0 .. NUM_ROOMS - 1) {
+                rooms[i].Alarm_in ! M_RESET;
+            }
+        }
+
     :: Vent_in ? M_VENT ->
         venting++;
         if
-        :: (venting >= ALARM_THRESHOLD * NUM_ROOMS / 100) &&
-           !alarming ->
-            printf("Factory in ALARM mode.\n");
+        :: venting >= ALARM_THRESHOLD && !alarming ->
             alarming = true;
-
             atomic {
-                Alarm_out ! M_ALARM;
-                int i = 0;
-                do
-                :: (i == NUM_ROOMS) ->
-                    break;
-                :: else ->
+                int i;
+                for (i : 0 .. NUM_ROOMS - 1) {
                     rooms[i].Alarm_in ! M_ALARM;
-                    i++;
-                od;
+                }
+
+                Alarm_out ! M_ALARM;
             }
         :: else ->
             skip;
         fi;
+
     :: Vent_in ? M_UNVENT ->
         venting--;
     od;
@@ -129,39 +145,36 @@ chan FactoryAlarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
-    rooms[0].lowerBound = 2;
-    rooms[0].upperBound = 5;
-    rooms[0].volume = 1000;
-    rooms[0].ventRate = 15;
-    rooms[0].gasRate = 1;
+    {
+        int i;
+        for (i : 0 .. NUM_ROOMS - 1) {
+            rooms[i].lowerBound = 10;
+            rooms[i].upperBound = 20;
+            rooms[i].volume = 1000;
+            rooms[i].ventRate = 5;
+            rooms[i].gasRate = 1;
+        }
+    }
 
     atomic {
-        int i = 0;
-        do
-        :: (i == NUM_ROOMS) ->
-            break;
-        :: else ->
+        int i;
+        for (i : 0 .. NUM_ROOMS - 1) {
             rooms[i].i = i;
             rooms[i].Clock_in = Clock[i];
             rooms[i].Alarm_in = RoomAlarm[i];
 
             run RoomController(rooms[i], Vent);
-            i++;
-        od;
+        }
         run FactoryController(Vent, FactoryAlarm, Reset);
         run Agent(FactoryAlarm, Reset);
     }
 
     do
     :: atomic {
-        int i = 0;
-        do
-        :: (i == NUM_ROOMS) ->
-            break;
-        :: else ->
+        int i;
+        for (i : 0 .. NUM_ROOMS - 1) {
             rooms[i].Clock_in ! M_TICK;
-            i++;
-        od;
+        }
     }
     od;
 }
