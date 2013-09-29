@@ -30,7 +30,7 @@ Room rooms[NUM_ROOMS];
 
 proctype RoomController(Room room;
                         chan Vent_out) {
-    do
+    end: do
     :: room.Alarm_in ? M_ALARM ->
         printf("Room %d has received an ALARM.\n", room.i);
         room.alarming = true;
@@ -94,7 +94,7 @@ proctype FactoryController(chan Vent_in,
     int venting = 0;
     bool alarming = false;
 
-    do
+    end: do
     :: Reset_in ? M_RESET ->
         printf("Factory NO LONGER in ALARM mode.\n");
         alarming = false;
@@ -130,7 +130,7 @@ proctype FactoryController(chan Vent_in,
 
 proctype Agent(chan Alarm_in,
                     Reset_out) {
-    do
+    end: do
     :: Alarm_in ? M_ALARM ->
         printf("Agent is RESETTING alarm.\n");
         Reset_out ! M_RESET;
