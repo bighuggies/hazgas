@@ -93,8 +93,7 @@ proctype FactoryController(chan Vent_in,
             printf("Factory in ALARM mode.\n");
             alarming = true;
 
-            do
-            :: atomic {
+            atomic {
                 Alarm_out ! M_ALARM;
                 int i = 0;
                 do
@@ -105,7 +104,6 @@ proctype FactoryController(chan Vent_in,
                     i++;
                 od;
             }
-            od;
         :: else ->
             skip;
         fi;
