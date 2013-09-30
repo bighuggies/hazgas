@@ -29,8 +29,6 @@ typedef Room {
     int volume;         /* Volume of the room in litres */
     int gasVolume;      /* Volume of gas in the room */
 
-    chan Clock_in;
-
     int lowerBound;     /* Threshold to SHUT vent */
     int upperBound;     /* Threshold to OPEN vent */
     int ventRate;
@@ -44,9 +42,7 @@ Room rooms[NUM_ROOMS];  /* Create rooms */
 proctype RoomController(Room room;
                         chan Vent_out) {
     end: do
-    /* On each clock tick */
-    :: room.Clock_in ? M_TICK ->
-
+    ::
         /* Increase gas volume */
         room.gasVolume = room.gasVolume + room.gasRate;
 
@@ -55,7 +51,7 @@ proctype RoomController(Room room;
         :: ((room.gasVolume >= room.upperBound) || alarming) &&
            !room.venting ->
             room.venting = true;
-            printf("Room %d is now VENTING (%d).\n", room.i, room.gasVolume);
+            printf("Room %d is now VENTING (%dL gas). (%d)\n", room.i, room.gasVolume, alarming);
             Vent_out ! M_VENT;
         :: (room.gasVolume <= room.lowerBound) && !alarming &&
            room.venting ->
@@ -164,21 +160,10 @@ init {
         int i;
         for (i : 0 .. NUM_ROOMS - 1) {
             rooms[i].i = i;
-            rooms[i].Clock_in = Clock[i];
 
             run RoomController(rooms[i], Vent);
         }
         run FactoryController(Vent, FactoryAlarm, Reset);
         run Agent(FactoryAlarm, Reset);
     }
-
-    /* Increment clock */
-    do
-    :: atomic {
-        int i;
-        for (i : 0 .. NUM_ROOMS - 1) {
-            rooms[i].Clock_in ! M_TICK;
-        }
-    }
-    od;
 }
