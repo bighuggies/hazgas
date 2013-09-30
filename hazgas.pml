@@ -9,8 +9,8 @@
  * Tony Young
  */
 
-#define NUM_ROOMS 10
-#define ALARM_THRESHOLD 3
+#define NUM_ROOMS 3
+#define ALARM_THRESHOLD 1
 
 bool alarming = false;
 
@@ -50,22 +50,14 @@ proctype RoomController(Room room;
         /* Increase gas volume */
         room.gasVolume = room.gasVolume + room.gasRate;
 
-        /* If alarming; vent */
-        if
-        :: alarming ->
-            goto ventOnly;
-        :: else ->
-            skip;
-        fi;
-
         /* Check venting status */
         if
-        :: (room.gasVolume >= room.upperBound) &&
+        :: ((room.gasVolume >= room.upperBound) || alarming) &&
            !room.venting ->
             room.venting = true;
             printf("Room %d is now VENTING (%d).\n", room.i, room.gasVolume);
             Vent_out ! M_VENT;
-        :: (room.gasVolume <= room.lowerBound) &&
+        :: (room.gasVolume <= room.lowerBound) && !alarming &&
            room.venting ->
             room.venting = false;
             printf("Room %d is NO LONGER VENTING. (%d)\n", room.i, alarming);
@@ -75,7 +67,6 @@ proctype RoomController(Room room;
         fi;
 
         /* If venting; decrement gas volume */
-        ventOnly:
         if
         :: room.venting ->
             room.gasVolume = room.gasVolume - room.ventRate;
@@ -134,16 +125,14 @@ proctype Agent(chan Alarm_in,
     od;
 };
 
-/* Room fields */
-chan Clock[NUM_ROOMS] = [0] of {mtype};
-chan RoomAlarm[NUM_ROOMS] = [0] of {mtype};
-
 /* Global variables */
 chan Vent = [0] of {mtype};
 chan FactoryAlarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
+    chan Clock[NUM_ROOMS] = [0] of {mtype};
+
     /* Initialise rooms */
     atomic {
         int i;
