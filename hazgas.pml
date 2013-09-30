@@ -1,3 +1,14 @@
+/*
+ * Hazardous Gas Detection System ("hazgas")
+ * Best Group
+ *
+ * Alexander Borsboom
+ * Andrew Hughson
+ * Andrew Luey
+ * Sam Metson
+ * Tony Young
+ */
+
 #define NUM_ROOMS 10
 #define ALARM_THRESHOLD 3
 
