@@ -1,4 +1,4 @@
-#define NUM_ROOMS 5
+#define NUM_ROOMS 10
 #define ALARM_THRESHOLD 3
 
 bool alarming = false;
@@ -133,19 +133,29 @@ chan FactoryAlarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
-
     /* Initialise rooms */
     atomic {
         int i;
         for (i : 0 .. NUM_ROOMS - 1) {
-            rooms[i].lowerBound = 10;
-            rooms[i].upperBound = 20;
-            rooms[i].volume = 1000;
-            rooms[i].ventRate = 5;
-            rooms[i].gasRate = 0;
-        }
+            int lowerBound;
+            select(lowerBound : 10..20);
+            rooms[i].lowerBound = lowerBound;
 
-        rooms[0].gasRate = 1;
+            int range;
+            select(range : 1..10);
+            rooms[i].upperBound = lowerBound + range;
+
+            int volume;
+            select(volume : 1000..2000);
+            rooms[i].volume = volume;
+
+            int gasRate;
+            select(gasRate : 5..10);
+            rooms[i].gasRate = gasRate;
+
+            select(range : 1..10);
+            rooms[i].ventRate = gasRate + range;
+        }
     }
 
     atomic {
