@@ -125,12 +125,10 @@ proctype Agent(chan Alarm_in,
 
 /* Global variables */
 chan Vent = [0] of {mtype};
-chan FactoryAlarm = [0] of {mtype};
+chan Alarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
-    chan Clock[NUM_ROOMS] = [0] of {mtype};
-
     /* Initialise rooms */
     atomic {
         int i;
@@ -163,7 +161,7 @@ init {
 
             run RoomController(rooms[i], Vent);
         }
-        run FactoryController(Vent, FactoryAlarm, Reset);
-        run Agent(FactoryAlarm, Reset);
+        run FactoryController(Vent, Alarm, Reset);
+        run Agent(Alarm, Reset);
     }
 }
