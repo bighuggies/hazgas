@@ -69,13 +69,15 @@ proctype RoomController(Room room;
         /* If venting; decrement gas volume */
         if
         :: room.venting ->
-            room.gasVolume = room.gasVolume - room.ventRate;
-            if
-            :: room.gasVolume < 0 ->
-                room.gasVolume = 0
-            :: else ->
-                skip
-            fi;
+            atomic {
+                room.gasVolume = room.gasVolume - room.ventRate;
+                if
+                :: room.gasVolume < 0 ->
+                    room.gasVolume = 0
+                :: else ->
+                    skip
+                fi;
+            }
         :: else ->
             skip;
         fi;
