@@ -1,6 +1,7 @@
 #define NUM_ROOMS 2
 #define ALARM_THRESHOLD 1
 
+/* Message types */
 mtype = {
     M_TICK,
     M_VENT,
@@ -9,28 +10,30 @@ mtype = {
     M_RESET
 };
 
+/* Room struct */
 typedef Room {
-    int i;
+    int i;              /* Room number */
+    int volume;         /* Volume of the room in litres */
+    int gasVolume;      /* Volume of gas in the room */
+
     chan Clock_in;
     chan Alarm_in;
 
-    int lowerBound;
-    int upperBound;
-    int volume;
+    int lowerBound;     /* Threshold to SHUT vent */
+    int upperBound;     /* Threshold to OPEN vent */
     int ventRate;
     int gasRate;
-
-    int gasVolume;
 
     bool venting;
     bool alarming;
 };
 
-Room rooms[NUM_ROOMS];
+Room rooms[NUM_ROOMS];  /* Create rooms */
 
 proctype RoomController(Room room;
                         chan Vent_out) {
     end: do
+    /* If alarming; start venting */
     :: room.Alarm_in ? M_ALARM ->
         printf("Room %d has received an ALARM.\n", room.i);
         room.alarming = true;
@@ -43,13 +46,18 @@ proctype RoomController(Room room;
             skip;
         fi;
 
+    /* Stop alarming */
     :: room.Alarm_in ? M_RESET ->
         printf("Room %d has STOPPED ALARMING.\n", room.i);
         room.alarming = false;
 
+    /* On each clock tick */
     :: room.Clock_in ? M_TICK ->
+
+        /* Increase gas volume */
         room.gasVolume = room.gasVolume + room.gasRate;
 
+        /* If alarming; vent */
         if
         :: room.alarming ->
             goto ventOnly;
@@ -57,6 +65,7 @@ proctype RoomController(Room room;
             skip;
         fi;
 
+        /* Check venting status */
         if
         :: (room.gasVolume >= room.upperBound) &&
            !room.venting ->
@@ -72,6 +81,7 @@ proctype RoomController(Room room;
             skip;
         fi;
 
+        /* If venting; decrement gas volume */
         ventOnly:
         if
         :: room.venting ->
@@ -95,6 +105,7 @@ proctype FactoryController(chan Vent_in,
     bool alarming = false;
 
     end: do
+    /* If the alarm has been reset; stop alarming */
     :: Reset_in ? M_RESET ->
         printf("Factory NO LONGER in ALARM mode.\n");
         alarming = false;
@@ -106,9 +117,12 @@ proctype FactoryController(chan Vent_in,
             }
         }
 
+    /* Increment num of rooms venting */
     :: Vent_in ? M_VENT ->
         venting++;
+
         if
+        /* If the room is over the threshold; ALARM!!!!! */
         :: venting >= ALARM_THRESHOLD && !alarming ->
             alarming = true;
             atomic {
@@ -116,13 +130,13 @@ proctype FactoryController(chan Vent_in,
                 for (i : 0 .. NUM_ROOMS - 1) {
                     rooms[i].Alarm_in ! M_ALARM;
                 }
-
                 Alarm_out ! M_ALARM;
             }
         :: else ->
             skip;
         fi;
 
+    /* Decrement num of rooms venting */
     :: Vent_in ? M_UNVENT ->
         venting--;
     od;
@@ -130,6 +144,8 @@ proctype FactoryController(chan Vent_in,
 
 proctype Agent(chan Alarm_in,
                     Reset_out) {
+
+    /* Reset alarms */
     end: do
     :: Alarm_in ? M_ALARM ->
         printf("Agent is RESETTING alarm.\n");
@@ -137,14 +153,18 @@ proctype Agent(chan Alarm_in,
     od;
 };
 
+/* Room fields */
 chan Clock[NUM_ROOMS] = [0] of {mtype};
 chan RoomAlarm[NUM_ROOMS] = [0] of {mtype};
 
+/* Global variables */
 chan Vent = [0] of {mtype};
 chan FactoryAlarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
+
+    /* Initialise rooms */
     {
         int i;
         for (i : 0 .. NUM_ROOMS - 1) {
@@ -169,6 +189,7 @@ init {
         run Agent(FactoryAlarm, Reset);
     }
 
+    /* Increment clock */
     do
     :: atomic {
         int i;
