@@ -9,8 +9,21 @@
  * Tony Young
  */
 
-#define NUM_ROOMS 3
-#define ALARM_THRESHOLD 1
+#define NUM_ROOMS 4
+#define ALARM_THRESHOLD 2
+
+#define VOLUME_LOW 1000
+#define VOLUME_HIGH 10000
+
+#define LOWER_BOUND_LOW 20
+#define LOWER_BOUND_HIGH 250
+#define UPPER_BOUND_OFFSET_LOW 1
+#define UPPER_BOUND_OFFSET_HIGH 250
+
+#define GAS_LOW 0
+#define GAS_HIGH 20
+#define VENT_OFFSET_LOW 10
+#define VENT_OFFSET_HIGH 20
 
 bool alarming = false;
 
@@ -97,12 +110,11 @@ proctype FactoryController(chan Vent_in,
     :: Vent_in ? M_VENT ->
         venting++;
 
+        /* If the num of rooms alarming is over the threshold; ALARM!!!!! */
         if
-        /* If the room is over the threshold; ALARM!!!!! */
         :: venting >= ALARM_THRESHOLD && !alarming ->
             printf("Factory is in ALARM mode.\n");
             alarming = true;
-
             Alarm_out ! M_ALARM;
         :: else ->
             skip;
@@ -117,7 +129,7 @@ proctype FactoryController(chan Vent_in,
 proctype Agent(chan Alarm_in,
                     Reset_out) {
 
-    /* Reset alarms */
+    /* Reset alarm */
     end: do
     :: Alarm_in ? M_ALARM ->
         int c;
@@ -140,22 +152,22 @@ init {
         int i;
         for (i : 0 .. NUM_ROOMS - 1) {
             int lowerBound;
-            select(lowerBound : 10..20);
+            select(lowerBound : LOWER_BOUND_LOW..LOWER_BOUND_HIGH);
             rooms[i].lowerBound = lowerBound;
 
             int range;
-            select(range : 1..10);
+            select(range : UPPER_BOUND_OFFSET_LOW..UPPER_BOUND_OFFSET_HIGH);
             rooms[i].upperBound = lowerBound + range;
 
             int volume;
-            select(volume : 1000..2000);
+            select(volume : VOLUME_LOW..VOLUME_HIGH);
             rooms[i].volume = volume;
 
             int gasRate;
-            select(gasRate : 5..10);
+            select(gasRate : GAS_LOW..GAS_HIGH);
             rooms[i].gasRate = gasRate;
 
-            select(range : 1..10);
+            select(range : VENT_OFFSET_LOW..VENT_OFFSET_HIGH);
             rooms[i].ventRate = gasRate + range;
         }
     }
