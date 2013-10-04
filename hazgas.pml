@@ -140,7 +140,7 @@ proctype Agent(chan Alarm_in,
                 Reset_out ! M_RESET;
                 break;
             :: else ->
-                skip;
+                printf("!\n");
             fi;
         od;
     od;

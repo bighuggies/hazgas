@@ -81,22 +81,19 @@ reset_button.pack()
 def process():
     global alarming, reset_alarm_next_tick
 
-    if alarming:
-        # if we are in alarming mode, hazgas goes into step mode so we have to
-        # manually step
+    l = p.stdout.readline().strip()
+
+    if l == "!":
+        alarming = True
+
         if reset_alarm_next_tick:
             p.stdin.write(".")
             reset_alarm_next_tick = False
             reset_button.config(state=DISABLED)
         else:
             p.stdin.write(",")
+            reset_button.config(state=NORMAL)
         p.stdin.flush()
-
-    l = p.stdout.readline().strip()
-
-    if l == "!":
-        alarming = True
-        reset_button.config(state=NORMAL)
     elif l == ".":
         alarming = False
     else:
