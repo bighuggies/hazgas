@@ -9,18 +9,18 @@
  * Tony Young
  */
 
-#define NUM_ROOMS 4
-#define ALARM_THRESHOLD 2
+#define NUM_ROOMS 10
+#define ALARM_THRESHOLD 5
 
 #define VOLUME_LOW 1000
 #define VOLUME_HIGH 10000
 
-#define LOWER_BOUND_LOW 20
-#define LOWER_BOUND_HIGH 250
-#define UPPER_BOUND_OFFSET_LOW 1
-#define UPPER_BOUND_OFFSET_HIGH 250
+#define LOWER_BOUND_LOW 500
+#define LOWER_BOUND_HIGH 750
+#define UPPER_BOUND_OFFSET_LOW 750
+#define UPPER_BOUND_OFFSET_HIGH 1000
 
-#define GAS_LOW 0
+#define GAS_LOW 10
 #define GAS_HIGH 20
 #define VENT_OFFSET_LOW 10
 #define VENT_OFFSET_HIGH 20
@@ -66,12 +66,10 @@ proctype RoomController(Room room;
         :: ((room.gasVolume >= room.upperBound) || alarming) &&
            !room.venting ->
             room.venting = true;
-            printf("Room %d is now VENTING (%dL gas). (%d)\n", room.i, room.gasVolume, alarming);
             Vent_out ! M_VENT;
         :: (room.gasVolume <= room.lowerBound) && !alarming &&
            room.venting ->
             room.venting = false;
-            printf("Room %d is NO LONGER VENTING. (%d)\n", room.i, alarming);
             Vent_out ! M_UNVENT;
         :: else ->
             skip;
@@ -92,6 +90,8 @@ proctype RoomController(Room room;
         :: else ->
             skip;
         fi;
+
+        printf("%d:%d:%d\n", room.i, room.gasVolume, room.venting);
     od;
 };
 
@@ -103,8 +103,8 @@ proctype FactoryController(chan Vent_in,
     end: do
     /* If the alarm has been reset; stop alarming */
     :: Reset_in ? M_RESET ->
-        printf("Factory NO LONGER in ALARM mode.\n");
         alarming = false;
+        printf(".\n");
 
     /* Increment num of rooms venting */
     :: Vent_in ? M_VENT ->
@@ -113,8 +113,8 @@ proctype FactoryController(chan Vent_in,
         /* If the num of rooms alarming is over the threshold; ALARM!!!!! */
         if
         :: venting >= ALARM_THRESHOLD && !alarming ->
-            printf("Factory is in ALARM mode.\n");
             alarming = true;
+            printf("!\n");
             Alarm_out ! M_ALARM;
         :: else ->
             skip;
@@ -137,10 +137,10 @@ proctype Agent(chan Alarm_in,
         :: STDIN ? c ->
             if
             :: c == '.' ->
-                printf("Agent is RESETTING alarm.\n");
                 Reset_out ! M_RESET;
+                break;
             :: else ->
-                skip
+                skip;
             fi;
         od;
     od;
@@ -181,8 +181,15 @@ init {
 
     atomic {
         int i;
+        printf("%d\n", NUM_ROOMS);
         for (i : 0 .. NUM_ROOMS - 1) {
             rooms[i].i = i;
+            printf("%d:%d:%d:%d:%d:%d\n", rooms[i].i,
+                                          rooms[i].volume,
+                                          rooms[i].lowerBound,
+                                          rooms[i].upperBound,
+                                          rooms[i].ventRate,
+                                          rooms[i].gasRate);
 
             run RoomController(rooms[i], Vent);
         }
