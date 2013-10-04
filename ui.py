@@ -24,7 +24,7 @@ class Room(object):
         self.venting = False
 
     def __repr__(self):
-        return "<Room: {volume}L, gas > {lower_bound}L, gas < {upper_bound}L, gas -{vent_rate}L/s+{gas_rate}L/s, gas @ {gas_volume}>".format(**self.__dict__)
+        return "<Room: {volume}L, gas > {lower_bound}L, gas < {upper_bound}L, gas -{vent_rate}L/s+{gas_rate}L/s, gas @ {gas_volume}L>".format(**self.__dict__)
 
 # read the number of rooms
 num_rooms = int(p.stdout.readline().strip())
@@ -46,6 +46,8 @@ for _ in range(num_rooms):
     x_offsets.append(width)
     width += volume // height
 
+print(rooms)
+
 root = Tk()
 root.wm_title("Hazgas")
 c = Canvas(root, width=(width + MARGIN * (1 + num_rooms)) * SCALE,
@@ -64,8 +66,8 @@ for room in rooms:
                        (left + w) * SCALE, (MARGIN + height) * SCALE,
                        fill="green", tags=("gas", "gas-{0}".format(room.i)))
 
-    c.create_rectangle(left * SCALE, (MARGIN + height - lower_bound // height) * SCALE,
-                       (left + w) * SCALE, (MARGIN + height - upper_bound // height) * SCALE,
+    c.create_rectangle(left * SCALE, (MARGIN + height - lower_bound // w) * SCALE,
+                       (left + w) * SCALE, (MARGIN + height - upper_bound // w) * SCALE,
                        outline="red", tags=("bounds", "bounds-{0}".format(room.i)))
 
 alarming = False
@@ -114,7 +116,7 @@ def redraw():
         left = MARGIN * (room.i + 1) + x_offsets[room.i]
         w = room.volume // height
 
-        gas_height = room.gas_volume // height
+        gas_height = room.gas_volume // w
 
         c.coords("gas-{0}".format(room.i),
                  left * SCALE, (MARGIN + height - gas_height) * SCALE,
