@@ -14,6 +14,8 @@
 
 bool alarming = false;
 
+chan STDIN;
+
 /* Message types */
 mtype = {
     M_TICK,
@@ -118,6 +120,8 @@ proctype Agent(chan Alarm_in,
     /* Reset alarms */
     end: do
     :: Alarm_in ? M_ALARM ->
+        int c;
+        STDIN ? c;
         printf("Agent is RESETTING alarm.\n");
         Reset_out ! M_RESET;
     od;
@@ -129,6 +133,8 @@ chan Alarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
+    int c;
+
     /* Initialise rooms */
     atomic {
         int i;
