@@ -12,8 +12,7 @@ class AgentThread(threading.Thread):
 
     def run(self):
         while True:
-            raw_input()
-            self.process.stdin.write(".")
+            self.process.stdin.write(raw_input())
             self.process.stdin.flush()
 
 p = subprocess.Popen(["spin", "-T", "hazgas.pml"], stdin=subprocess.PIPE,

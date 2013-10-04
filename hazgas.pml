@@ -133,13 +133,16 @@ proctype Agent(chan Alarm_in,
     end: do
     :: Alarm_in ? M_ALARM ->
         int c;
-        if
+        do
         :: STDIN ? c ->
-            printf("Agent is RESETTING alarm.\n");
-            Reset_out ! M_RESET;
-        :: else ->
-            skip;
-        fi;
+            if
+            :: c == '.' ->
+                printf("Agent is RESETTING alarm.\n");
+                Reset_out ! M_RESET;
+            :: else ->
+                skip
+            fi;
+        od;
     od;
 };
 
