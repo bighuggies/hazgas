@@ -13,7 +13,9 @@
 
 bool alarming = false;
 
+#ifdef UI
 chan STDIN;
+#endif
 
 /* Message types */
 mtype = {
@@ -116,6 +118,7 @@ proctype Agent(chan Alarm_in,
     /* Reset alarm */
     end: do
     :: Alarm_in ? M_ALARM ->
+#ifdef UI
         int c;
         do
         :: STDIN ? c ->
@@ -127,6 +130,9 @@ proctype Agent(chan Alarm_in,
                 printf("!\n");
             fi;
         od;
+#else
+        Reset_out ! M_RESET;
+#endif
     od;
 };
 

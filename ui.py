@@ -10,8 +10,8 @@ import time
 from Tkinter import *
 
 
-p = subprocess.Popen(["spin", "-T", "hazgas.pml"], stdin=subprocess.PIPE,
-                                                   stdout=subprocess.PIPE)
+p = subprocess.Popen(["spin", "-DUI", "-T", "hazgas.pml"], stdin=subprocess.PIPE,
+                                                           stdout=subprocess.PIPE)
 
 @atexit.register
 def kill_child():
