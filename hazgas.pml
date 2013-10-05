@@ -38,8 +38,6 @@ typedef Room {
     bool venting;
 };
 
-Room rooms[NUM_ROOMS];  /* Create rooms */
-
 proctype RoomController(Room room;
                         chan Vent_out) {
     end: do
@@ -138,7 +136,7 @@ chan Alarm = [0] of {mtype};
 chan Reset = [0] of {mtype};
 
 init {
-    int c;
+    Room rooms[NUM_ROOMS];  /* Create rooms */
 
     /* Initialise rooms */
     atomic {
@@ -166,8 +164,9 @@ init {
     }
 
     atomic {
-        int i;
         printf("%d\n", NUM_ROOMS);
+
+        int i;
         for (i : 0 .. NUM_ROOMS - 1) {
             rooms[i].i = i;
             printf("%d:%d:%d:%d:%d:%d\n", rooms[i].i,
