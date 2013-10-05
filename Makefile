@@ -1,6 +1,4 @@
-SPIN ?= spin
-
 .PHONY: all
 
-all: hazgas.pml
-	${SPIN} ${SPINARGS} $<
+all: ui.py hazgas.pml params.pml
+	./$<

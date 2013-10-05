@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import atexit
+import signal
 import subprocess
 import sys
 import threading
@@ -10,6 +12,11 @@ from Tkinter import *
 
 p = subprocess.Popen(["spin", "-T", "hazgas.pml"], stdin=subprocess.PIPE,
                                                    stdout=subprocess.PIPE)
+
+@atexit.register
+def kill_child():
+    p.send_signal(signal.SIGTERM)
+
 
 class Room(object):
     def __init__(self, i, volume, lower_bound, upper_bound, vent_rate, gas_rate):
