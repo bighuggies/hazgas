@@ -139,29 +139,7 @@ init {
     Room rooms[NUM_ROOMS];  /* Create rooms */
 
     /* Initialise rooms */
-    atomic {
-        int i;
-        for (i : 0 .. NUM_ROOMS - 1) {
-            int lowerBound;
-            select(lowerBound : LOWER_BOUND_LOW..LOWER_BOUND_HIGH);
-            rooms[i].lowerBound = lowerBound;
-
-            int range;
-            select(range : UPPER_BOUND_OFFSET_LOW..UPPER_BOUND_OFFSET_HIGH);
-            rooms[i].upperBound = lowerBound + range;
-
-            int volume;
-            select(volume : VOLUME_LOW..VOLUME_HIGH);
-            rooms[i].volume = volume;
-
-            int gasRate;
-            select(gasRate : GAS_LOW..GAS_HIGH);
-            rooms[i].gasRate = gasRate;
-
-            select(range : VENT_OFFSET_LOW..VENT_OFFSET_HIGH);
-            rooms[i].ventRate = gasRate + range;
-        }
-    }
+#   include "rooms.pml"
 
     atomic {
         printf("%d\n", NUM_ROOMS);

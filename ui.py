@@ -73,8 +73,8 @@ for room in rooms:
                        (left + w) * SCALE, (MARGIN + height) * SCALE,
                        fill="green", tags=("gas", "gas-{0}".format(room.i)))
 
-    c.create_rectangle(left * SCALE, (MARGIN + height - lower_bound // w) * SCALE,
-                       (left + w) * SCALE, (MARGIN + height - upper_bound // w) * SCALE,
+    c.create_rectangle(left * SCALE, (MARGIN + height - room.lower_bound // w) * SCALE,
+                       (left + w) * SCALE, (MARGIN + height - room.upper_bound // w) * SCALE,
                        outline="red", tags=("bounds", "bounds-{0}".format(room.i)))
 
 alarming = False
