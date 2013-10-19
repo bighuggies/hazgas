@@ -41,4 +41,14 @@ while True:
 
     i += 1
 
-print("\nVerification completed: {0} claims in total, {1} claims passed".format(i, passed))
+print("""
+\033[37m\033[1mVerification completed.\033[0m
+
+    {0} claims in total, of which:
+    \033[32m{1} passed.\033[0m \
+""".format(i, passed))
+
+if passed < i:
+    print("    \033[31m{0} failed.\033[0m".format(i - passed))
+
+print("")
