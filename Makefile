@@ -1,8 +1,11 @@
-.PHONY: all clean
+.PHONY: all clean test
 
 CC ?= icc
 
-all: pan
+all: test
+
+test: pan harness.py
+	./harness.py $<
 
 pan: pan.c
 	${CC} -O2 -o $@ $<

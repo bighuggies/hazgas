@@ -25,3 +25,7 @@ ltl room_venting_on_alarm {
 ltl lower_gas_threshold_never_higher_than_upper_gas_threshold {
     always (inited implies (rooms[0].lowerBound < rooms[0].upperBound));
 }
+
+ltl stupid {
+    always false
+}
