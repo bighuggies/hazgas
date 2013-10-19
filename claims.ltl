@@ -27,5 +27,5 @@ ltl lower_gas_threshold_never_higher_than_upper_gas_threshold {
 }
 
 ltl stupid {
-    always false
+    always (is_reset implies alarming)
 }
