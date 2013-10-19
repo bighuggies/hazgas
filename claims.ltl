@@ -1,0 +1,27 @@
+ltl room_must_eventually_not_kill_people {
+    always ((rooms[0].gasVolume > rooms[0].upperBound) implies always eventually (rooms[0].gasVolume < rooms[0].lowerBound))
+}
+
+ltl room_will_vent_if_upper_gas_threshold_exceeded {
+    always eventually (rooms[0].gasVolume > rooms[0].upperBound implies rooms[0].venting);
+}
+
+ltl room_vent_rate_always_greater_than_gas_rate {
+    always (inited implies (rooms[0].ventRate > rooms[0].gasRate));
+}
+
+ltl room_under_threshold_not_venting_unless_alarming {
+    always (!alarming implies (rooms[0].gasVolume < rooms[0].lowerBound) implies !rooms[0].venting)
+}
+
+ltl stop_alarming_on_reset {
+    always ((alarming && is_reset) implies eventually !alarming)
+}
+
+ltl room_venting_on_alarm {
+    always eventually (alarming implies rooms[0].venting)
+}
+
+ltl lower_gas_threshold_never_higher_than_upper_gas_threshold {
+    always (inited implies (rooms[0].lowerBound < rooms[0].upperBound));
+}

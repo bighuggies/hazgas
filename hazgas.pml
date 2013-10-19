@@ -12,11 +12,13 @@
 #include "params.pml"
 
 /* Global variables */
-chan Clock[NUM_ROOMS]    = [0] of {mtype};
+chan Clock[NUM_ROOMS] = [0] of {mtype};
 chan Vent = [NUM_ROOMS] of {mtype};
 chan Alarm = [0] of {mtype};
 
+bool inited = false;
 bool alarming = false;
+bool is_reset = false;
 
 /* Message types */
 mtype = {
@@ -43,7 +45,7 @@ typedef Room {
 proctype RoomController(Room room;
                         chan Vent_out,
                         Clock_in) {
-    end: do
+    do
     :: Clock_in ? M_TICK ->
         /* Increase gas volume */
         room.gasVolume = room.gasVolume + room.gasRate;
@@ -87,7 +89,7 @@ proctype FactoryController(chan Vent_in,
     int venting = 0;
     bool window[ALARM_WINDOW];
 
-    end: do
+    do
     ::  atomic {
             printf("t\n");
             int i;
@@ -141,20 +143,27 @@ proctype FactoryController(chan Vent_in,
 };
 
 proctype Agent(chan Alarm_in) {
-
     /* Reset alarm */
-    end: do
+    do
     :: Alarm_in ? M_ALARM ->
+        is_reset = true;
+
+        /* TODO: needs to non-deterministically select */
         alarming = false;
+
+        is_reset = false;
         printf(".\n");
     od;
 };
 
-init {
-    Room rooms[NUM_ROOMS];  /* Create rooms */
+Room rooms[NUM_ROOMS];  /* Create rooms */
 
+#   include "claims.ltl"
+
+init {
     /* Initialise rooms */
 #   include "rooms.pml"
+    inited = true;
 
     atomic {
         printf("%d\n", NUM_ROOMS);
@@ -167,7 +176,6 @@ init {
                                           rooms[i].upperBound,
                                           rooms[i].ventRate,
                                           rooms[i].gasRate);
-
             run RoomController(rooms[i], Vent, Clock[i]);
         }
         run FactoryController(Vent, Alarm);

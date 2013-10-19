@@ -1,3 +1,3 @@
-#define NUM_ROOMS 3
-#define ALARM_WINDOW 100
-#define ALARM_THRESHOLD 5
+#define NUM_ROOMS 1
+#define ALARM_WINDOW 2
+#define ALARM_THRESHOLD 1
