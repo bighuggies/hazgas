@@ -15,7 +15,6 @@
 chan Clock[NUM_ROOMS]    = [0] of {mtype};
 chan Vent = [NUM_ROOMS] of {mtype};
 chan Alarm = [0] of {mtype};
-chan Reset = [0] of {mtype};
 
 bool alarming = false;
 
@@ -28,8 +27,7 @@ mtype = {
     M_TICK,
     M_VENT,
     M_UNVENT,
-    M_ALARM,
-    M_RESET
+    M_ALARM
 };
 
 /* Room struct */
@@ -89,8 +87,7 @@ proctype RoomController(Room room;
 };
 
 proctype FactoryController(chan Vent_in,
-                                Alarm_out,
-                                Reset_in) {
+                                Alarm_out) {
     int venting = 0;
     bool window[ALARM_WINDOW];
 
@@ -103,25 +100,11 @@ proctype FactoryController(chan Vent_in,
         }
 
         if
-           /* If the alarm has been reset; stop alarming */
-        :: Reset_in ? M_RESET ->
-            alarming = false;
-            printf(".\n");
-
         /* Increment num of rooms venting */
         :: nempty(Vent_in) ->
             if
             :: Vent_in ? M_VENT ->
                 venting++;
-                /* If the num of rooms alarming is over the threshold; ALARM!!!!! */
-                if
-                :: venting >= ALARM_THRESHOLD && !alarming ->
-                    alarming = true;
-                    printf("!\n");
-                    Alarm_out ! M_ALARM;
-                :: else ->
-                    skip;
-                fi;
             :: Vent_in ? M_UNVENT ->
                 venting--;
             fi;
@@ -130,13 +113,14 @@ proctype FactoryController(chan Vent_in,
             skip;
         fi;
 
-        window[0] = venting > 0;
         atomic {
             int i;
-            for (i : NUM_ROOMS - 2 .. 0) {
-                window[i + 1] = window[i];
+            for (i : 1 .. ALARM_WINDOW - 1) {
+                window[ALARM_WINDOW - i] = window[ALARM_WINDOW - i - 1];
             }
         }
+
+        window[0] = venting > 0;
 
         int numTicksAlarming;
         {
@@ -145,12 +129,21 @@ proctype FactoryController(chan Vent_in,
                 numTicksAlarming = numTicksAlarming + window[i];
             }
         }
-        alarming = alarming || numTicksAlarming > ALARM_THRESHOLD;
+
+        alarming = alarming || numTicksAlarming >= ALARM_THRESHOLD;
+
+        if
+        ::  alarming ->
+            printf("!\n");
+            Alarm_out ! M_ALARM;
+        :: else ->
+            skip;
+        fi;
+
     od;
 };
 
-proctype Agent(chan Alarm_in,
-                    Reset_out) {
+proctype Agent(chan Alarm_in) {
 
     /* Reset alarm */
     end: do
@@ -161,14 +154,14 @@ proctype Agent(chan Alarm_in,
         :: STDIN ? c ->
             if
             :: c == '.' ->
-                Reset_out ! M_RESET;
+                alarming = false;
                 break;
             :: else ->
                 printf("!\n");
             fi;
         od;
 #else
-        Reset_out ! M_RESET;
+        alarming = false;
 #endif
     od;
 };
@@ -193,7 +186,7 @@ init {
 
             run RoomController(rooms[i], Vent, Clock[i]);
         }
-        run FactoryController(Vent, Alarm, Reset);
-        run Agent(Alarm, Reset);
+        run FactoryController(Vent, Alarm);
+        run Agent(Alarm);
     }
 }
