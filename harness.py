@@ -19,7 +19,7 @@ while True:
     o, _ = p.communicate()
 
     claim = "??"
-    holds = True
+    error = None
 
     for line in o.split("\n"):
         if "non-existing claim" in line:
@@ -27,7 +27,7 @@ while True:
             break
 
         if "assertion violated" in line:
-            holds = False
+            error = line
 
         if line[:len(NEVER_CLAIM)] == NEVER_CLAIM:
             claim = line[len(NEVER_CLAIM) + 1:len(line) - 1]
@@ -35,9 +35,12 @@ while True:
     if not has_more_claims:
         break
 
-    passed += holds
+    passed += error is None
 
-    print("{0} {1}\033[0m".format("\033[32m✔" if holds else "\033[31m✗", claim))
+    print("{0} {1}\033[0m".format("\033[32m✔" if error is None else "\033[31m✗", claim))
+
+    if error is not None:
+        print("    " + error + "\n")
 
     i += 1
 
