@@ -18,10 +18,6 @@ chan Alarm = [0] of {mtype};
 
 bool alarming = false;
 
-#ifdef UI
-    chan STDIN;     /* Get input from stdin */
-#endif
-
 /* Message types */
 mtype = {
     M_TICK,
