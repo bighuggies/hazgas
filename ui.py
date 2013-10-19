@@ -79,29 +79,17 @@ for room in rooms:
                        outline="red", tags=("bounds", "bounds-{0}".format(room.i)))
 
 alarming = False
-reset_alarm_next_tick = False
-
-def do_reset():
-    global reset_alarm_next_tick
-    reset_alarm_next_tick = True
 
 tick_label = Label(root, text=str(tick))
 tick_label.pack()
 
 def process():
-    global alarming, reset_alarm_next_tick, tick
+    global alarming, tick
 
     l = p.stdout.readline().strip()
 
     if l == "!":
         alarming = True
-
-        if reset_alarm_next_tick:
-            p.stdin.write(".")
-            reset_alarm_next_tick = False
-        else:
-            p.stdin.write(",")
-        p.stdin.flush()
     elif l == ".":
         alarming = False
     elif l == "t":
