@@ -11,6 +11,12 @@
 
 #include "params.pml"
 
+/* Global variables */
+chan Clock[NUM_ROOMS]    = [0] of {mtype};
+chan Vent = [NUM_ROOMS] of {mtype};
+chan Alarm = [0] of {mtype};
+chan Reset = [0] of {mtype};
+
 bool alarming = false;
 
 #ifdef UI
@@ -41,9 +47,10 @@ typedef Room {
 };
 
 proctype RoomController(Room room;
-                        chan Vent_out) {
+                        chan Vent_out,
+                        Clock_in) {
     end: do
-    ::
+    :: Clock_in ? M_TICK ->
         /* Increase gas volume */
         room.gasVolume = room.gasVolume + room.gasRate;
 
@@ -85,30 +92,60 @@ proctype FactoryController(chan Vent_in,
                                 Alarm_out,
                                 Reset_in) {
     int venting = 0;
+    bool window[ALARM_WINDOW];
 
     end: do
-    /* If the alarm has been reset; stop alarming */
-    :: Reset_in ? M_RESET ->
-        alarming = false;
-        printf(".\n");
+    ::  atomic {
+            int i;
+            for (i : 0 .. NUM_ROOMS - 1) {
+                Clock[i] ! M_TICK;
+            }
+        }
 
-    /* Increment num of rooms venting */
-    :: Vent_in ? M_VENT ->
-        venting++;
-
-        /* If the num of rooms alarming is over the threshold; ALARM!!!!! */
         if
-        :: venting >= ALARM_THRESHOLD && !alarming ->
-            alarming = true;
-            printf("!\n");
-            Alarm_out ! M_ALARM;
-        :: else ->
+           /* If the alarm has been reset; stop alarming */
+        :: Reset_in ? M_RESET ->
+            alarming = false;
+            printf(".\n");
+
+        /* Increment num of rooms venting */
+        :: nempty(Vent_in) ->
+            if
+            :: Vent_in ? M_VENT ->
+                venting++;
+                /* If the num of rooms alarming is over the threshold; ALARM!!!!! */
+                if
+                :: venting >= ALARM_THRESHOLD && !alarming ->
+                    alarming = true;
+                    printf("!\n");
+                    Alarm_out ! M_ALARM;
+                :: else ->
+                    skip;
+                fi;
+            :: Vent_in ? M_UNVENT ->
+                venting--;
+            fi;
+
+        :: empty(Vent_in) ->
             skip;
         fi;
 
-    /* Decrement num of rooms venting */
-    :: Vent_in ? M_UNVENT ->
-        venting--;
+        window[0] = venting > 0;
+        atomic {
+            int i;
+            for (i : NUM_ROOMS - 2 .. 0) {
+                window[i + 1] = window[i];
+            }
+        }
+
+        int numTicksAlarming;
+        {
+            int i;
+            for (i : 0 .. ALARM_WINDOW - 1) {
+                numTicksAlarming = numTicksAlarming + window[i];
+            }
+        }
+        alarming = alarming || numTicksAlarming > ALARM_THRESHOLD;
     od;
 };
 
@@ -136,11 +173,6 @@ proctype Agent(chan Alarm_in,
     od;
 };
 
-/* Global variables */
-chan Vent = [0] of {mtype};
-chan Alarm = [0] of {mtype};
-chan Reset = [0] of {mtype};
-
 init {
     Room rooms[NUM_ROOMS];  /* Create rooms */
 
@@ -152,7 +184,6 @@ init {
 
         int i;
         for (i : 0 .. NUM_ROOMS - 1) {
-            rooms[i].i = i;
             printf("%d:%d:%d:%d:%d:%d\n", rooms[i].i,
                                           rooms[i].volume,
                                           rooms[i].lowerBound,
@@ -160,7 +191,7 @@ init {
                                           rooms[i].ventRate,
                                           rooms[i].gasRate);
 
-            run RoomController(rooms[i], Vent);
+            run RoomController(rooms[i], Vent, Clock[i]);
         }
         run FactoryController(Vent, Alarm, Reset);
         run Agent(Alarm, Reset);
