@@ -20,7 +20,7 @@ chan Reset = [0] of {mtype};
 bool alarming = false;
 
 #ifdef UI
-chan STDIN;
+    chan STDIN;     /* Get input from stdin */
 #endif
 
 /* Message types */
@@ -40,10 +40,10 @@ typedef Room {
 
     int lowerBound;     /* Threshold to SHUT vent */
     int upperBound;     /* Threshold to OPEN vent */
-    int ventRate;
-    int gasRate;
+    int ventRate;       /* Rate at which the gas DECREASES when venting */
+    int gasRate;        /* Rate at which the gas INCREASES each clock tick */
 
-    bool venting;
+    bool venting;       /* Is the room venting? */
 };
 
 proctype RoomController(Room room;
