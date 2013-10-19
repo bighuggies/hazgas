@@ -36,6 +36,7 @@ class Room(object):
 # read the number of rooms
 num_rooms = int(p.stdout.readline().strip())
 rooms = [None] * num_rooms
+tick = 0
 
 # plot rooms on canvas
 MARGIN = 5
@@ -84,11 +85,11 @@ def do_reset():
     global reset_alarm_next_tick
     reset_alarm_next_tick = True
 
-reset_button = Button(root, text="Reset", command=do_reset, state=DISABLED)
-reset_button.pack()
+tick_label = Label(root, text=str(tick))
+tick_label.pack()
 
 def process():
-    global alarming, reset_alarm_next_tick
+    global alarming, reset_alarm_next_tick, tick
 
     l = p.stdout.readline().strip()
 
@@ -98,13 +99,14 @@ def process():
         if reset_alarm_next_tick:
             p.stdin.write(".")
             reset_alarm_next_tick = False
-            reset_button.config(state=DISABLED)
         else:
             p.stdin.write(",")
-            reset_button.config(state=NORMAL)
         p.stdin.flush()
     elif l == ".":
         alarming = False
+    elif l == "t":
+        tick += 1
+        tick_label.config(text=str(tick))
     else:
         i, gas_volume, venting = map(int, l.split(":"))
 

@@ -93,6 +93,7 @@ proctype FactoryController(chan Vent_in,
 
     end: do
     ::  atomic {
+            printf("t\n");
             int i;
             for (i : 0 .. NUM_ROOMS - 1) {
                 Clock[i] ! M_TICK;
@@ -148,21 +149,8 @@ proctype Agent(chan Alarm_in) {
     /* Reset alarm */
     end: do
     :: Alarm_in ? M_ALARM ->
-#ifdef UI
-        int c;
-        do
-        :: STDIN ? c ->
-            if
-            :: c == '.' ->
-                alarming = false;
-                break;
-            :: else ->
-                printf("!\n");
-            fi;
-        od;
-#else
         alarming = false;
-#endif
+        printf(".\n");
     od;
 };
 
