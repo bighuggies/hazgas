@@ -3,6 +3,7 @@
 
 import subprocess
 import re
+import os
 
 i = 0
 passed = 0
@@ -15,15 +16,17 @@ print("\033[37m\033[1mPerforming verification...\033[0m\n")
 
 while True:
     p = subprocess.Popen(["./pan", "-N{0}".format(i), "-n"],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    o, _ = p.communicate()
+                         stdout=subprocess.PIPE, stderr=open(os.devnull, "w"))
 
     claim = "??"
     error = []
 
-    for line in o.split("\n"):
+    for line in p.stdout:
+        line = line.strip("\r\n")
+
         if "non-existing claim" in line:
             has_more_claims = False
+            p.kill()
             break
 
         if "assertion violated" in line:
