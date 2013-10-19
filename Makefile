@@ -4,8 +4,8 @@ CC ?= icc
 
 all: test
 
-test: pan harness.py
-	./harness.py $<
+test: harness.py pan
+	./$<
 
 pan: pan.c
 	${CC} -O2 -o $@ $<
