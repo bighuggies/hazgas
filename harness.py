@@ -4,6 +4,7 @@
 import subprocess
 import re
 import os
+import sys
 
 i = 0
 passed = 0
@@ -15,7 +16,7 @@ has_more_claims = True
 print("\033[37m\033[1mPerforming verification...\033[0m\n")
 
 while True:
-    p = subprocess.Popen(["./pan", "-N{0}".format(i), "-n"],
+    p = subprocess.Popen(["./pan", "-N{0}".format(i), "-n"] + sys.argv,
                          stdout=subprocess.PIPE, stderr=open(os.devnull, "w"))
 
     claim = "??"
