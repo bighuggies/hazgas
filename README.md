@@ -10,16 +10,16 @@
  * Make
 
 ## Verification
-1. Clone the repo
+ 1. Clone the repo
 
-    git clone https://github.com/bighuggies/hazgas.git
+        git clone https://github.com/bighuggies/hazgas.git
 
-2. View claims
+ 2. View claims
 
-    cat claims.ltl
+        cat claims.ltl
 
-3. Compile the source code and run the verifier:
+ 3. Compile the source code and run the verifier:
 
-    make
+        make
 
 ## Simulation
