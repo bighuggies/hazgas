@@ -76,11 +76,14 @@ public class GasIndicator : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
+		// Set the volume of the room based on the scale of the room.
 		roomVolume = Mathf.Abs (transform.lossyScale.x) * Mathf.Abs (transform.lossyScale.z) * 4f;
 		if ( roomVolume < 4f ) {
+			// Ensure we have a minimum room volume so that divide by zero issues are ignored.
 			roomVolume = 4f;
 		}
 		
+		// Work out the gas level - how full the room is of gas as a %.
 		gasLevel = gasVolume / roomVolume;
 		if ( gasLevel < 0 ) {
 			gasVolume = 0;
@@ -102,41 +105,28 @@ public class GasIndicator : MonoBehaviour {
 		scale.y = height * gasLevel;
 		transform.localScale = scale;
 		
+		// set the opacity of the material.
 		renderer.material.SetFloat ("_Alpha", (gasLevel/1.2f) + (1f/6f));
 		
 		
 		
 		// Add/remove gas depending on what's going on.
+		// If we are alarming, vent the room.
 		if ( alarming ) {
 			vent ();
-			
-			bool clear = true;
-			
-			// Check if all rooms are empty.
-			// No longer need to do this?
-			/*foreach ( GasIndicator i in rooms ) {
-				if ( i.gasVolume > 0 ) {
-					clear = false;
-					break;
-				}
-			}
-			
-			if ( clear ) {
-				// stop alarming.
-				alarming = false;
-				venting = false;
-			}*/
-			
 		} else {
+			// Otherwise, if we are venting the room, vent until we are below the specified threshold.
 			if ( venting ) {
 				if ( gasLevel > gasMinThreshold ) {
 					vent ();
 				} else {
+					// If we're below the threshold, stop venting.
 					venting = false;
 					numVenting--;
 				}
 				
 			} else {
+				//We aren't alarming and we're not venting - 
 				gasVolume += fillRate * Time.deltaTime;
 				if ( gasLevel > gasThreshold ) {
 					startVenting ();
