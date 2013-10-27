@@ -18,7 +18,7 @@
 
         cat claims.ltl
 
- 3. Compile the source code and run the verifier:
+ 3. Compile the source code and run the verifier
 
         make
 
