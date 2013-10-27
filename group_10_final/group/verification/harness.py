@@ -16,7 +16,7 @@ has_more_claims = True
 print("\033[37m\033[1mPerforming verification...\033[0m\n")
 
 while True:
-    p = subprocess.Popen(["./pan", "-N{0}".format(i), "-n"] + sys.argv,
+    p = subprocess.Popen(["./pan", "-N{0}".format(i), "-n"] + sys.argv[1:],
                          stdout=subprocess.PIPE, stderr=open(os.devnull, "w"))
 
     claim = "??"
@@ -30,7 +30,7 @@ while True:
             p.kill()
             break
 
-        if "assertion violated" in line:
+        if "assertion violated" in line or line.startswith("error:"):
             error.append(line)
 
         if line[:len(NEVER_CLAIM)] == NEVER_CLAIM:

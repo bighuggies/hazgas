@@ -13,8 +13,8 @@
 
 /* Global variables */
 chan Clock[NUM_ROOMS] = [0] of {mtype};
-chan Vent = [NUM_ROOMS] of {mtype};
-chan Alarm = [0] of {mtype};
+chan Vent = [0] of {mtype};
+chan AgentClock = [0] of {mtype};
 
 bool inited = false;
 bool alarming = false;
@@ -26,8 +26,7 @@ int num_ticks_alarming = 0;
 mtype = {
     M_TICK,
     M_VENT,
-    M_UNVENT,
-    M_ALARM
+    M_UNVENT
 };
 
 /* Room struct */
@@ -89,7 +88,7 @@ proctype RoomController(Room room;
 
 /* Factory controller, which gathers information from individual rooms, and alarms if appropriate */
 proctype FactoryController(chan Vent_in,
-                                Alarm_out) {
+                                AgentClock_out) {
     /* Number of venting rooms */
     int venting = 0;
     /* Window of previous clock ticks */
@@ -140,21 +139,15 @@ proctype FactoryController(chan Vent_in,
         /* If the number of recent venting ticks is >threshold, alarm. */
         alarming = alarming || num_ticks_alarming >= ALARM_THRESHOLD;
 
-        if
-        ::  alarming ->
-            Alarm_out ! M_ALARM;
-        :: else ->
-            skip;
-        fi;
-
+        AgentClock_out ! M_TICK;
     od;
 };
 
 /* The agent that resets the alarm */
-proctype Agent(chan Alarm_in) {
+proctype Agent(chan AgentClock_in) {
     /* Reset alarm */
     do
-    :: Alarm_in ? M_ALARM ->
+    :: AgentClock_in ? M_TICK ->
         is_reset = true;
 
         alarming = false;
@@ -177,7 +170,7 @@ init {
         for (i : 0 .. NUM_ROOMS - 1) {
             run RoomController(rooms[i], Vent, Clock[i]);
         }
-        run FactoryController(Vent, Alarm);
-        run Agent(Alarm);
+        run FactoryController(Vent, AgentClock);
+        run Agent(AgentClock);
     }
 }
