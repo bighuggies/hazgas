@@ -15,4 +15,4 @@ pan.c: hazgas.pml params.pml rooms.pml claims.ltl
 	spin -a -L $<
 
 clean:
-	rm -f pan pan.*
+	rm -rf pan pan.*
