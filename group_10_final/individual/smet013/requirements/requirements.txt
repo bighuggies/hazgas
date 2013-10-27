@@ -26,6 +26,8 @@
 
       always eventually (alarming -> rooms[i].venting)
 
+* The factory controller should be able to receive and handle all information from room controllers before the next clock tick.
+
 # Non-Functional Requirements
 
 * The gas ventilation rate must be specifiable.

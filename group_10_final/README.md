@@ -58,3 +58,6 @@ have been venting.
 The last slider indicates the rate at which gas accumulates. Moving the slider
 to the left indicates a fill rate of 0 liters per second, and moving the slider
 to the right indicates a fill rate of 20 liters.
+
+The model for gas control is contained within the GasIndicator class and the
+alarm manager class.

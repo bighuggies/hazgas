@@ -1,0 +1,11 @@
+SPIN is a verifier targeting multithreaded programs which uses the promela language. 
+
+INSTALLATION FOR WINDOWS:
+1) Download a spin distribution from http://spinroot.com/spin/Src/index.html
+2) Extract the spin distribution somewhere. Add the directory containing spin.exe to the path.
+
+To use spin, run iSpin or access from the command line as described on the spin readme at http://spinroot.com/spin/Man/README.html#S1b.
+
+INSTALLATION OF ISPIN:
+1) Install tck/tk
+2) run ispin
