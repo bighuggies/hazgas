@@ -19,7 +19,7 @@ while True:
     p = subprocess.Popen(["./pan", "-N{0}".format(i), "-n"] + sys.argv[1:],
                          stdout=subprocess.PIPE, stderr=open(os.devnull, "w"))
 
-    claim = "??"
+    claim = None
     error = []
 
     for line in p.stdout:
@@ -35,6 +35,9 @@ while True:
 
         if line[:len(NEVER_CLAIM)] == NEVER_CLAIM:
             claim = line[len(NEVER_CLAIM) + 1:len(line) - 1]
+
+    if claim is None:
+        break
 
     if not has_more_claims:
         break
