@@ -148,7 +148,6 @@ proctype Agent(chan Alarm_in) {
     :: Alarm_in ? M_ALARM ->
         is_reset = true;
 
-        /* TODO: needs to non-deterministically select */
         alarming = false;
 
         is_reset = false;
