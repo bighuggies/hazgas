@@ -42,15 +42,18 @@ typedef Room {
     bool venting;       /* Is the room venting? */
 };
 
+/* Room controller, which reads room gas concentration, vents or stops venting as appropriate, 
+ * and communicates with the factory controller */
 proctype RoomController(Room room;
                         chan Vent_out,
                         Clock_in) {
     do
+    /* Every tick, increase gas then perform appropriate venting options */
     :: Clock_in ? M_TICK ->
         /* Increase gas volume */
         room.gasVolume = room.gasVolume + room.gasRate;
 
-        /* Check venting status */
+        /* Check venting status, then output any change */
         if
         :: ((room.gasVolume >= room.upperBound) || alarming) &&
            !room.venting ->
@@ -64,7 +67,7 @@ proctype RoomController(Room room;
             skip;
         fi;
 
-        /* If venting; decrement gas volume */
+        /* If venting; decrease gas volume */
         if
         :: room.venting ->
             atomic {
@@ -84,9 +87,12 @@ proctype RoomController(Room room;
     od;
 };
 
+/* Factory controller, which gathers information from individual rooms, and alarms if appropriate */
 proctype FactoryController(chan Vent_in,
                                 Alarm_out) {
+    /* Number of venting rooms */
     int venting = 0;
+    /* Window of previous clock ticks */
     bool window[ALARM_WINDOW];
 
     do
@@ -112,6 +118,7 @@ proctype FactoryController(chan Vent_in,
             skip;
         fi;
 
+        /* Move window along */
         atomic {
             int i;
             for (i : 1 .. ALARM_WINDOW - 1) {
@@ -119,8 +126,10 @@ proctype FactoryController(chan Vent_in,
             }
         }
 
+        /* If at least one room was venting, set window index to true */
         window[0] = venting > 0;
 
+        /* Calculate the number of ticks in which a room was venting */
         int numTicksAlarming;
         {
             int i;
@@ -129,6 +138,7 @@ proctype FactoryController(chan Vent_in,
             }
         }
 
+        /* If the number of recent venting ticks is >threshold, alarm. */
         alarming = alarming || numTicksAlarming >= ALARM_THRESHOLD;
 
         if
@@ -142,6 +152,7 @@ proctype FactoryController(chan Vent_in,
     od;
 };
 
+/* The agent that resets the alarm */
 proctype Agent(chan Alarm_in) {
     /* Reset alarm */
     do
