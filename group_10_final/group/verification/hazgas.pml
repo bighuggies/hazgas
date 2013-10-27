@@ -16,16 +16,27 @@ chan Clock[NUM_ROOMS] = [0] of {mtype};
 chan Vent = [NUM_ROOMS] of {mtype};
 chan AgentClock = [0] of {mtype};
 
+/* Whether or not the rooms have been initialized */
 bool inited = false;
+
+/* Whether or not the system is alarming */
 bool alarming = false;
+
+/* Whether or not the reset button has been pressed but has not taken effect */
 bool is_reset = false;
 
+/* The number of ticks we have spent in the alarming state */
 int num_ticks_alarming = 0;
 
 /* Message types */
 mtype = {
+    /* Clock tick */
     M_TICK,
+
+    /* Venting signal */
     M_VENT,
+
+    /* Stop venting signal */
     M_UNVENT
 };
 
@@ -86,7 +97,8 @@ proctype RoomController(Room room;
     od;
 };
 
-/* Factory controller, which gathers information from individual rooms, and alarms if appropriate */
+/* Factory controller, which gathers information from individual rooms, and
+   alarms if appropriate */
 proctype FactoryController(chan Vent_in,
                                 AgentClock_out) {
     /* Number of venting rooms */
@@ -95,7 +107,9 @@ proctype FactoryController(chan Vent_in,
     bool window[ALARM_WINDOW];
 
     do
-    ::  atomic {
+    ::
+        /* Tick all the rooms */
+        atomic {
             int i;
             for (i : 0 .. NUM_ROOMS - 1) {
                 Clock[i] ! M_TICK;
@@ -103,7 +117,9 @@ proctype FactoryController(chan Vent_in,
         }
 
         if
-        /* Increment num of rooms venting */
+
+        /* Increment/decrement number of rooms venting accordingly for every
+           vent/unvent message in the queue */
         :: nempty(Vent_in) ->
             if
             :: Vent_in ? M_VENT ->
@@ -116,7 +132,7 @@ proctype FactoryController(chan Vent_in,
             skip;
         fi;
 
-        /* Move window along */
+        /* Shift the window along so we can write into the first index */
         atomic {
             int i;
             for (i : 1 .. ALARM_WINDOW - 1) {
@@ -139,6 +155,7 @@ proctype FactoryController(chan Vent_in,
         /* If the number of recent venting ticks is >threshold, alarm. */
         alarming = alarming || num_ticks_alarming >= ALARM_THRESHOLD;
 
+        /* Tick the agent, if we need to reset the alarms */
         AgentClock_out ! M_TICK;
     od;
 };
@@ -157,6 +174,9 @@ proctype Agent(chan Clock_in) {
             if
             /* If we've selected i = 0, then we reset the alarm */
             :: i == 0 ->
+                /* is_reset is a variable indicating that the button has been
+                   pressed -- it is only used for verification to ensure that
+                   pressing the reset button stops the alarm */
                 is_reset = true;
                 alarming = false;
                 is_reset = false;
@@ -172,7 +192,7 @@ proctype Agent(chan Clock_in) {
 
 Room rooms[NUM_ROOMS];  /* Create rooms */
 
-#   include "claims.ltl"
+#include "claims.ltl"
 
 init {
     /* Initialise rooms */

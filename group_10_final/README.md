@@ -22,6 +22,17 @@
 
        make
 
+Notes about the verification:
+
+* The model being verified only has two rooms. This can be parametrically
+  adjusted using the `params.pml` file to first define the number of rooms,
+  then editing the `rooms.pml` file accordingly to set its parameters.
+
+* Spin's LTL formulae do not support universal quantification, so foralls must
+  be manually expanded. In `claims.ltl`, we only specify LTL formulae for two
+  rooms as this is sufficient to test the behavior of the system with multiple
+  rooms and avoids an explosion of state space.
+
 ## Simulation
 
 Installation Instructions for HazGas Simulator:
@@ -45,7 +56,8 @@ Hold down the right mouse button to change the view
 
 Click with the left mouse button and drag over an area to create a new room.
 
-Located in the top left corner of the screen are a number of button and sliders.
+Located in the top left corner of the screen are a number of button and
+sliders.
 
 The top slider indicates the alarm threshold. A threshold of 10% indicates that
 the alarm will trigger if any rooms have been venting for 10% of the recorded
