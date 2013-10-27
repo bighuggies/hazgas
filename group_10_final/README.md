@@ -39,4 +39,4 @@ Click with the left mouse button and drag over an area to create a new room.
 Located in the top left corner of the screen are a number of button and sliders.
 The top slider indicates the alarm threshold. A threshold of 10% indicates that the alarm will trigger if any rooms have been venting for 10% of the recorded history. Sliding the slider to the left indicates a threshold of 0%, sliding to the right indicates a threshold of 100%.
 The middle slider shows the percentage of the past 800 frames in which rooms have been venting.
-The last slider indicates the rate at which gas accumulates. Moving the slider to the left indicates a fill rate of 0 litres per second, and moving the slider to the right indicates a fill rate of 20 litres. 
+The last slider indicates the rate at which gas accumulates. Moving the slider to the left indicates a fill rate of 0 litres per second, and moving the slider to the right indicates a fill rate of 20 litres.
