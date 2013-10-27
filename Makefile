@@ -1,7 +1,7 @@
 .PHONY: all clean test
 
-CC ?= icc
-CFLAGS ?= -O2
+CC ?= gcc
+CFLAGS := -O2 ${CFLAGS}
 
 all: test
 
