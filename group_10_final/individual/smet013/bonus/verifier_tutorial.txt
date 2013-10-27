@@ -1,0 +1,24 @@
+INSTALLING SPIN (For UNIX systems)
+
+1. Download the tar of the latest release of spin (full distribution) from spinroot.com.
+(Current version at http://spinroot.com/spin/Src/spin625.tar.gz).
+
+2. Make sure you are in the directory containing the tarball, then unzip the file.
+	
+	gunzip *.tar.gz
+	tar -xf *.tar
+
+3. Change to the source directory, then run make.
+	cd Src*
+	make
+
+   If you want to test the installation cd to the Test directory of the main folder, 
+   and follow the instructions in the README.tests file.
+
+4. (OPTIONAL) If you want the graphical interface for the installation (ispin), run the 
+install.sh file located in the iSpin subdirectory of the main folder. 
+You may need to install tcl/tk first.
+	
+	(from Src)
+	cd ../iSpin
+	./install.sh

@@ -1,0 +1,13 @@
+# Spin Installation Tutorial
+
+## Prerequsites
+ * Mac OSX (Mavericks)
+
+ * Homebrew Package Manager
+
+## Installing Spin on Mac OSX
+ 1. Open a new terminal window
+
+ 2. Install Spin using Homebrew
+
+        brew install spin
