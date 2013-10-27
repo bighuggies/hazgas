@@ -9,18 +9,17 @@
 
       AG \forall r in rooms, r.lowerThresh < r.upperThresh
 
-* The gas level of a room, if it exceeds the upper gas threshold, must
-  eventually be lower than the lower gas threshold.
-
-      AG \forall r in rooms, r.gasVol > r.upperThresh -> AF r.gasVol < r.lowerThresh
-
 * If the factory is alarming and the user presses the reset button, the
   factory must stop alarming.
 
       AG alarm and isReset -> AX not alarm
 
+* If the alarm is on, all rooms must be ventilating.
+
+      AG alarm -> \forall r in rooms, r.vent
+
 # Non-Functional Requirements
 
-* The number of rooms must be specifiable.
+* The gas ventilation rate must be specifiable.
 
-* The gas level thresholds must be specifiable (lower and upper).
+* The gas buildup rate must be specifiable.

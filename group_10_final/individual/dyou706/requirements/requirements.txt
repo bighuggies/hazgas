@@ -9,10 +9,10 @@
 
       AG \forall r in rooms, r.lowerThresh < r.upperThresh
 
-* If gas level is below lower threshold, room is not ventilating unless
-  alarming.
+* If the system is ventilating for more than a defined percentage of clock
+  ticks over a period of time, the system must alarm in the next clock tick.
 
-      AG not alarm -> \forall r in rooms, r.gasVol < r.lowerThresh and not r.vent
+   Timing is not supported by CTL.
 
 * If the alarm is on, all rooms must be ventilating.
 
@@ -20,6 +20,6 @@
 
 # Non-Functional Requirements
 
-* Gas sensors must sense the level of gas accurately.
+* The gas volume must build up at a steady rate.
 
-* Ventilators must not malfunction.
+* Each room must have a air capacity of no more than 10000 liters.
