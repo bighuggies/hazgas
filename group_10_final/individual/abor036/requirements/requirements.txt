@@ -4,21 +4,21 @@
 
       AG \forall r in rooms, r.ventRate > v.gasRate
 
-      always (inited -> (rooms[0].ventRate > rooms[0].gasRate));
+      always (inited -> (rooms[i].ventRate > rooms[i].gasRate));
 
 * A room's lower gas level threshold is never higher than the upper gas level
   threshold.
 
       AG \forall r in rooms, r.lowerThresh < r.upperThresh
 
-      always (inited -> (rooms[0].lowerBound < rooms[0].upperBound));
+      always (inited -> (rooms[i].lowerBound < rooms[i].upperBound));
 
 * The gas level of a room, if it exceeds the upper gas threshold, must
   eventually be lower than the lower gas threshold.
 
       AG \forall r in rooms, r.gasVol > r.upperThresh -> AF r.gasVol < r.lowerThresh
 
-      always ((rooms[0].gasVolume > rooms[0].upperBound) -> always eventually (rooms[0].gasVolume < rooms[0].lowerBound))
+      always ((rooms[i].gasVolume > rooms[i].upperBound) -> always eventually (rooms[i].gasVolume < rooms[i].lowerBound))
 
 * If the factory is alarming and the user presses the reset button, the
   factory must stop alarming.
