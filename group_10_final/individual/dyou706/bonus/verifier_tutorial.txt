@@ -1,0 +1,29 @@
+# Installing Spin on OS X
+
+## Requirements
+
+* OS X
+
+* A C compiler (gcc, clang, icc, etc.)
+
+* yacc
+
+## Steps
+
+1. Download the Spin source tarball, e.g. src625.tar.gz
+   http://spinroot.com/spin/Src/index.html
+
+2. Un-tar the tarball, e.g. for src625.tar.gz
+
+       tar xzvf src625.tar.gz
+
+3. Enter the directory, e.g. for src625.tar.gz
+
+       cd Src6.2.5
+
+4. Run `make`.
+
+       make
+
+There should now be a binary called `spin` that can be used to run the Spin
+verifier on `.pml` files.
