@@ -13,7 +13,7 @@
 
 /* Global variables */
 chan Clock[NUM_ROOMS] = [0] of {mtype};
-chan Vent = [0] of {mtype};
+chan Vent = [NUM_ROOMS] of {mtype};
 chan AgentClock = [0] of {mtype};
 
 bool inited = false;
@@ -144,15 +144,29 @@ proctype FactoryController(chan Vent_in,
 };
 
 /* The agent that resets the alarm */
-proctype Agent(chan AgentClock_in) {
+proctype Agent(chan Clock_in) {
     /* Reset alarm */
     do
-    :: AgentClock_in ? M_TICK ->
-        is_reset = true;
+    :: Clock_in ? M_TICK ->
+        if
+        :: alarming ->
+            /* Non-deterministically determine if we should reset the alarm */
+            int i;
+            select (i : 0 .. 1);
 
-        alarming = false;
-
-        is_reset = false;
+            if
+            /* If we've selected i = 0, then we reset the alarm */
+            :: i == 0 ->
+                is_reset = true;
+                alarming = false;
+                is_reset = false;
+            /* Otherwise, we try again on the next tick. */
+            :: else ->
+                skip;
+            fi;
+        :: else ->
+            skip;
+        fi;
     od;
 };
 
