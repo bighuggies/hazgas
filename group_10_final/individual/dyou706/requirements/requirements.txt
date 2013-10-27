@@ -4,14 +4,14 @@
 
       AG \forall r in rooms, r.ventRate > v.gasRate
 
-      always (inited -> (rooms[0].ventRate > rooms[0].gasRate));
+      always (inited -> (rooms[i].ventRate > rooms[i].gasRate));
 
 * A room's lower gas level threshold is never higher than the upper gas level
   threshold.
 
       AG \forall r in rooms, r.lowerThresh < r.upperThresh
 
-      always (inited -> (rooms[0].lowerBound < rooms[0].upperBound));
+      always (inited -> (rooms[i].lowerBound < rooms[i].upperBound));
 
 * If the system is ventilating for more than a defined percentage of clock
   ticks over a period of time, the system must alarm in the next clock tick.
@@ -24,7 +24,7 @@
 
       AG alarm -> \forall r in rooms, r.vent
 
-      always eventually (alarming -> rooms[0].venting)
+      always eventually (alarming -> rooms[i].venting)
 
 # Non-Functional Requirements
 

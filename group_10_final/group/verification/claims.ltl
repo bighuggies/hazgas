@@ -1,17 +1,21 @@
 ltl room_must_eventually_not_kill_people {
-    always ((rooms[0].gasVolume > rooms[0].upperBound) -> always eventually (rooms[0].gasVolume < rooms[0].lowerBound))
+    always (((rooms[0].gasVolume > rooms[0].upperBound) -> always eventually (rooms[0].gasVolume < rooms[0].lowerBound)) &&
+            ((rooms[1].gasVolume > rooms[1].upperBound) -> always eventually (rooms[1].gasVolume < rooms[1].lowerBound)))
 }
 
 ltl room_will_vent_if_upper_gas_threshold_exceeded {
-    always eventually (rooms[0].gasVolume > rooms[0].upperBound -> rooms[0].venting);
+    always eventually ((rooms[0].gasVolume > rooms[0].upperBound -> rooms[0].venting) &&
+                       (rooms[1].gasVolume > rooms[1].upperBound -> rooms[1].venting));
 }
 
 ltl room_vent_rate_always_greater_than_gas_rate {
-    always (inited -> (rooms[0].ventRate > rooms[0].gasRate));
+    always (inited -> ((rooms[0].ventRate > rooms[0].gasRate) &&
+                       (rooms[1].ventRate > rooms[1].gasRate)));
 }
 
 ltl room_under_threshold_not_venting_unless_alarming {
-    always (!alarming -> (rooms[0].gasVolume < rooms[0].lowerBound) -> !rooms[0].venting)
+    always (!alarming -> (((rooms[0].gasVolume < rooms[0].lowerBound) -> !rooms[0].venting) &&
+                          ((rooms[1].gasVolume < rooms[1].lowerBound) -> !rooms[1].venting)))
 }
 
 ltl stop_alarming_on_reset {
@@ -19,11 +23,13 @@ ltl stop_alarming_on_reset {
 }
 
 ltl room_venting_on_alarm {
-    always eventually (alarming -> rooms[0].venting)
+    always eventually (alarming -> (rooms[0].venting &&
+                                    rooms[1].venting))
 }
 
 ltl lower_gas_threshold_never_higher_than_upper_gas_threshold {
-    always (inited -> (rooms[0].lowerBound < rooms[0].upperBound));
+    always (inited -> ((rooms[0].lowerBound < rooms[0].upperBound) &&
+                       (rooms[1].lowerBound < rooms[1].upperBound)));
 }
 
 ltl system_must_alarm {
