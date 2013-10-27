@@ -1,0 +1,4 @@
+1. The gas level of a room, if it exceeds the upper gas threshold, must
+   eventually be lower than the lower gas threshold.
+
+       AG \forall r in rooms, r.gasVol > r.upperThresh -> AF r.gasVol < r.lowerThresh

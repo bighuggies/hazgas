@@ -1,0 +1,7 @@
+1. A room will vent if the upper gas threshold is exceeded.
+
+       AG \forall r in rooms, r.gasVol > r.upperThresh -> AX r.vent
+
+2. Ventilation rate must always be higher than the gas buildup rate.
+
+       AG \forall r in rooms, r.ventRate > v.gasRate

@@ -26,6 +26,10 @@ ltl lower_gas_threshold_never_higher_than_upper_gas_threshold {
     always (inited -> (rooms[0].lowerBound < rooms[0].upperBound));
 }
 
+ltl system_must_alarm {
+    always (num_ticks_alarming > ALARM_WINDOW -> alarming);
+}
+
 ltl no_timeout {
     always !timeout;
 }

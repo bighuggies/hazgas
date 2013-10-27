@@ -20,6 +20,8 @@ bool inited = false;
 bool alarming = false;
 bool is_reset = false;
 
+int num_ticks_alarming = 0;
+
 /* Message types */
 mtype = {
     M_TICK,
@@ -79,8 +81,6 @@ proctype RoomController(Room room;
         :: else ->
             skip;
         fi;
-
-        printf("%d:%d:%d\n", room.i, room.gasVolume, room.venting);
     od;
 };
 
@@ -91,7 +91,6 @@ proctype FactoryController(chan Vent_in,
 
     do
     ::  atomic {
-            printf("t\n");
             int i;
             for (i : 0 .. NUM_ROOMS - 1) {
                 Clock[i] ! M_TICK;
@@ -121,19 +120,18 @@ proctype FactoryController(chan Vent_in,
 
         window[0] = venting > 0;
 
-        int numTicksAlarming;
+        num_ticks_alarming = 0;
         {
             int i;
             for (i : 0 .. ALARM_WINDOW - 1) {
-                numTicksAlarming = numTicksAlarming + window[i];
+                num_ticks_alarming = num_ticks_alarming + window[i];
             }
         }
 
-        alarming = alarming || numTicksAlarming >= ALARM_THRESHOLD;
+        alarming = alarming || num_ticks_alarming >= ALARM_THRESHOLD;
 
         if
         ::  alarming ->
-            printf("!\n");
             Alarm_out ! M_ALARM;
         :: else ->
             skip;
@@ -151,7 +149,6 @@ proctype Agent(chan Alarm_in) {
         alarming = false;
 
         is_reset = false;
-        printf(".\n");
     od;
 };
 
@@ -165,16 +162,8 @@ init {
     inited = true;
 
     atomic {
-        printf("%d\n", NUM_ROOMS);
-
         int i;
         for (i : 0 .. NUM_ROOMS - 1) {
-            printf("%d:%d:%d:%d:%d:%d\n", rooms[i].i,
-                                          rooms[i].volume,
-                                          rooms[i].lowerBound,
-                                          rooms[i].upperBound,
-                                          rooms[i].ventRate,
-                                          rooms[i].gasRate);
             run RoomController(rooms[i], Vent, Clock[i]);
         }
         run FactoryController(Vent, Alarm);
