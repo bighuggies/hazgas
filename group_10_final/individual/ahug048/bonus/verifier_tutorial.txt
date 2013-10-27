@@ -1,0 +1,32 @@
+# Installing Promela on Elementary OS (an Ubuntu derivative)
+
+## Installing Binary Distribution
+
+1. Download the Spin binary tar file for your platform from the Spin download
+page at http://spinroot.com/spin/Bin/index.html
+
+2. Extract the downloaded file from step one. Copy, move, or link the extracted binary file to a directory on your PATH. Make sure that the file on the PATH is called simply "spin".
+
+`sudo cp spin_linux64 /usr/local/bin/spin`
+
+3. Make the file on your path executable.
+
+`sudo chmod +x /usr/local/bin/spin`
+
+4. Check that Spin is installed correctly by opening a Terminal and running the command `spin -V`. The output should appear as ``Spin Version 6.2.5 -- 3 May 2013'', where the version number corresponds to the version of Spin which you downloaded.
+
+## Installing the iSpin GUI
+
+1. Download the iSpin script from http://spinroot.com/spin/Src/index.html (ispin.tcl).
+
+2. Give the iSpin script executable permissions.
+
+`chmod +x ispin.tcl`
+
+3. Run iSpin.
+
+`./ispin.tcl`
+
+### Troubleshooting
+
+If you cannot run iSpin, ensure that `spin` is correctly placed on your PATH. iSpin may also require system packages for TCL and TKinter. Ensure that these prerequisites are met in order to run iSpin.
