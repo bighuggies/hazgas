@@ -2,21 +2,29 @@
 
 * Ventilation rate must always be higher than the gas buildup rate.
 
-     AG \forall r in rooms, r.ventRate > v.gasRate
+      AG \forall r in rooms, r.ventRate > v.gasRate
+
+      always (inited -> (rooms[0].ventRate > rooms[0].gasRate));
 
 * A room's lower gas level threshold is never higher than the upper gas level
   threshold.
 
       AG \forall r in rooms, r.lowerThresh < r.upperThresh
 
+      always (inited -> (rooms[0].lowerBound < rooms[0].upperBound));
+
 * If gas level is below lower threshold, room is not ventilating unless
   alarming.
 
       AG not alarm -> \forall r in rooms, r.gasVol < r.lowerThresh and not r.vent
 
+      always (!alarming -> (rooms[0].gasVolume < rooms[0].lowerBound) -> !rooms[0].venting)
+
 * If the alarm is on, all rooms must be ventilating.
 
       AG alarm -> \forall r in rooms, r.vent
+
+      always eventually (alarming -> rooms[0].venting)
 
 # Non-Functional Requirements
 
