@@ -35,6 +35,8 @@ Notes about the verification:
 
 ## Simulation
 
+The simulation can be run by opening `Deploy.html` in the system folder.
+
 Installation Instructions for HazGas Simulator:
 
 1. Download and install unity.
